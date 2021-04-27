@@ -47,16 +47,16 @@ def plot_pose(pose):
     """Plot the 3D pose showing the joint connections."""
     import mpl_toolkits.mplot3d.axes3d as p3
 
-    _CONNECTION = [
+    _CONNECTION = [  # lines that we want to connect all those key points
         [0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [0, 7], [7, 8],
         [8, 9], [9, 10], [8, 11], [11, 12], [12, 13], [8, 14], [14, 15],
         [15, 16]]
 
-    def joint_color(j):
+    def joint_color(j):  # going the colors each line
         """
         TODO: 'j' shadows name 'j' from outer scope
         """
-
+        # ignore this func
         colors = [(0, 0, 0), (255, 0, 255), (0, 0, 255),
                   (0, 255, 255), (255, 0, 0), (0, 255, 0)]
         _c = 0
@@ -74,13 +74,13 @@ def plot_pose(pose):
 
     assert (pose.ndim == 2)
     assert (pose.shape[0] == 3)
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    fig = plt.figure()  # ignore
+    ax = fig.gca(projection='3d')  # creating some 3d matpotlib figures
     for c in _CONNECTION:
-        col = '#%02x%02x%02x' % joint_color(c[0])
-        ax.plot([pose[0, c[0]], pose[0, c[1]]],
-                [pose[1, c[0]], pose[1, c[1]]],
-                [pose[2, c[0]], pose[2, c[1]]], c=col)
+        col = '#%02x%02x%02x' % joint_color(c[0])  # ignore
+        ax.plot([pose[0, c[0]], pose[0, c[1]]],  # x1, x2
+                [pose[1, c[0]], pose[1, c[1]]],  # y1, y2
+                [pose[2, c[0]], pose[2, c[1]]], c=col)  # z1, z2
     for j in range(pose.shape[1]):
         col = '#%02x%02x%02x' % joint_color(j)
         ax.scatter(pose[0, j], pose[1, j], pose[2, j],

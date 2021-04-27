@@ -11,7 +11,7 @@ from estimator import TfPoseEstimator
 from networks import get_graph_path, model_wh
 
 from lifting.prob_model import Prob3dPose
-from lifting.draw import plot_pose  # there's a file called draw.py içinde plot_pose fonksiyonu
+from lifting.draw import plot_pose
 
 logger = logging.getLogger('TfPoseEstimator')
 logger.setLevel(logging.DEBUG)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     plt.imshow(tmp2_even, cmap=plt.cm.gray, alpha=0.5)
     plt.colorbar()
 
-    for i, single_3d in enumerate(pose_3d):  # pose_3d: all our key points
+    for i, single_3d in enumerate(pose_3d):
         plot_pose(single_3d)
     plt.show()
 
