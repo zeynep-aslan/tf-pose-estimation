@@ -1,7 +1,3 @@
-"""
-This serve as our base openGL class.
-"""
-
 import numpy as np
 import pyqtgraph.opengl as gl
 import pyqtgraph as pg
@@ -20,41 +16,21 @@ import common
 import math
 import threading
 import tkinter as tk
-# from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 
 class Terrain(object):
     def __init__(self):
-        """
-        Initialize the graphics window and mesh surface
-        add some grids in the 3 point... that are just filling up the background
-        """
 
         # setup the view window
         self.app = QtGui.QApplication(sys.argv)
         self.window = gl.GLViewWidget()
         self.window.setFixedSize(1920, 1080)
         self.window.showMaximized()
-        # self.window.setMaximumSize(1920, 1080)
-        # self.win = pg.GraphicsWindow()
-        # self.vb = self.win.addViewBox(col=0, row=0)
-        # self.t = pg.TextItem("zeynep", (255, 255, 255), anchor=(0,0))
-        # self.vb.addItem(self.t)
+
         self.window.setWindowTitle('Terrain')
         self.window.setGeometry(0, 0, 1920, 1080)
         self.window.setCameraPosition(distance=30, elevation=12)
         self.window.show()
-        # self.root = Tk()
         self.angle = ""
-        # self.root = Tk()
-        # self.root.geometry("100x50+%d+%d" % (0, 0))  # top left
-        # self.root.overrideredirect(True)  # frameless tkinter window
-        # self.root.resizable(False, False)
-        # self.root.columnconfigure(0, weight=1)
-        # self.root.rowconfigure(0, weight=1)
-
-        # TEXT = ""
-        # self.lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-        # self.lbl.grid(column=0, row=0, sticky="nsew")
 
         gx = gl.GLGridItem()
         gy = gl.GLGridItem()
@@ -80,7 +56,9 @@ class Terrain(object):
 
         w, h = model_wh(model)
         # we are gonna create e objects but instead we're gonna call it
+        print("modellllll : ", get_graph_path(model))
         self.e = TfPoseEstimator(get_graph_path(model), target_size=(w, h))
+        print("self.e : ", self.e)
         # we're basically just going the same thing(run.py line:37) instead of args.model
         # we just created our own object for model
         self.cam = cv2.VideoCapture(camera)
@@ -88,7 +66,6 @@ class Terrain(object):
         self.poseLifting = Prob3dPose('./src/lifting/models/prob_model_params.mat')
         # we'll have this object to do our 3d pose translater? yukardaki
         keypoints = self.mesh(image)
-        # rightPointList = keypoints[2:5]
         self.rightPointList = keypoints[11:14]
         self.leftPointList = keypoints[14:]
 
@@ -142,16 +119,11 @@ class Terrain(object):
         langle = np.arccos(lcosine_angle)
 
         self.angle = "sağ kol açısı: %.2f\nsol kol açısı: %.2f" % (np.degrees(rangle), np.degrees(langle))
-
-        # th1 = threading.Thread(self.addAngleToPlot(self.angle))
-        # th1 = threading.Thread(addAngleToPlot(self.angle))
-        # th1.start()
         print(self.angle)
         return self.angle
 
     def addAngleToPlot(self, txtAngle):
-        # lbl = Label(root, text=angle, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-        # global TEXT 
+
         root = tk.Tk()
         root.geometry("250x100+%d+%d" % (0, 0))  # top left
         root.overrideredirect(True)  # frameless tkinter window
@@ -174,7 +146,6 @@ class Terrain(object):
         # get humans, get 2d and 3d points
         for human in humans:
             pose_2d_mpii, visibility = common.MPIIPart.from_coco(human)
-            # print("\n\n")    
             # print(pose_2d_mpii, visibility)  
             pose_2d_mpiis.append([(int(x * standard_w + 0.5), int(y * standard_h + 0.5)) for x, y in pose_2d_mpii])  # all 2d keypoints
             visibilities.append(visibility)
@@ -185,7 +156,6 @@ class Terrain(object):
         pose_3d = self.poseLifting.compute_3d(transformed_pose2d, weights)  # compute and get 3d keypoints
         # print("pose_3d", pose_3d)
         keypoints = pose_3d[0].transpose()  # önceki videodaki resimde de yapmıştık
-        # print("keypoints", keypoints)
         return keypoints/90  # for keypoints show up the screen
 
     def update(self):  #  update self.points
@@ -205,7 +175,6 @@ class Terrain(object):
             self.right.setData(pos=self.rightPointList)
             self.left.setData(pos=self.leftPointList)
 
-            # self.points.setData(pos=keypoints)  # update points
             for n, pts in enumerate(self.connections):
                 self.lines[n].setData(
                     pos=np.array([keypoints[p] for p in pts])
@@ -214,9 +183,6 @@ class Terrain(object):
             txtAngle = self.armAngle(self.rightPointList, self.leftPointList)
             th1 = threading.Thread(target=self.addAngleToPlot, args=(txtAngle, ), daemon=True)
             th1.start()
-
-            # self.armAngle(self.rightPointList)
-            # self.armAngle(self.leftPointList)
 
     def start(self):
         """
@@ -234,42 +200,8 @@ class Terrain(object):
 
         timer.start(frametime)
         self.start()
-"""
-def addAngleToPlot(txtAngle=""):
-    root = tk.Tk()
-    root.geometry("250x100+%d+%d" % (0, 0))  # top left
-    root.overrideredirect(True)  # frameless tkinter window
-    root.resizable(False, False)
-    root.columnconfigure(0, weight=1)
-    root.rowconfigure(0, weight=1)
-    TEXT = txtAngle
-    lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.config(text=TEXT)
-    lbl.grid(column=0, row=0, sticky="nsew")
-    root.mainloop()
-"""
+
 if __name__ == '__main__':
     os.chdir('..')
-
-    # root = tk.Tk()
-    # root.geometry("250x100+%d+%d" % (0, 0))  # top left
-    # root.overrideredirect(True)  # frameless tkinter window
-    # root.resizable(False, False)
-    # root.columnconfigure(0, weight=1)
-    # root.rowconfigure(0, weight=1)
-
-    # TEXT = ""
-    # lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.grid(column=0, row=0, sticky="nsew")
-
-    # lbl = Label(root, text="", bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.grid(column=0, row=0, sticky="nsew")
     t = Terrain()
-    # th0 = threading.Thread(target=t)
-    # th0.start()
-    
-    # root = Tk()
-    # greeting = tk.Label(text="Hello, Tkinter")
     t.animation()
-    # root.mainloop()
-    # root.mainloop()
