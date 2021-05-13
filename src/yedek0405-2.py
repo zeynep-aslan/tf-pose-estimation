@@ -19,7 +19,7 @@ import common
 
 import math
 import threading
-import tkinter as tk
+from tkinter import *
 # from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 
 class Terrain(object):
@@ -31,34 +31,37 @@ class Terrain(object):
 
         # setup the view window
         self.app = QtGui.QApplication(sys.argv)
-        self.window = gl.GLViewWidget()
-        self.window.setFixedSize(1920, 1080)
-        self.window.showMaximized()
-        # self.window.setMaximumSize(1920, 1080)
+        # self.window = gl.GLViewWidget()
+        self.gw = pg.GraphicsWindow()
+        self.gw.resize(920, 680)
+        self.gw.setWindowTitle('Terrain')
+        # self.window = self.vb.addViewBox(col=0, row=0)
+        self.windowText = self.gw.addViewBox(col=0, row=0)
+        self.window = self.gw.addViewBox(col=0, row=1)
+
+        # setWindowTitle, setGeometry, setCameraPosition atladim
+        self.gw.show()
+
+
         # self.win = pg.GraphicsWindow()
         # self.vb = self.win.addViewBox(col=0, row=0)
         # self.t = pg.TextItem("zeynep", (255, 255, 255), anchor=(0,0))
         # self.vb.addItem(self.t)
-        self.window.setWindowTitle('Terrain')
-        self.window.setGeometry(0, 0, 1920, 1080)
-        self.window.setCameraPosition(distance=30, elevation=12)
-        self.window.show()
-        # self.root = Tk()
-        self.angle = ""
-        # self.root = Tk()
-        # self.root.geometry("100x50+%d+%d" % (0, 0))  # top left
-        # self.root.overrideredirect(True)  # frameless tkinter window
-        # self.root.resizable(False, False)
-        # self.root.columnconfigure(0, weight=1)
-        # self.root.rowconfigure(0, weight=1)
 
-        # TEXT = ""
-        # self.lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-        # self.lbl.grid(column=0, row=0, sticky="nsew")
+        # self.window.setWindowTitle('Terrain')
+        # self.window.setGeometry(0, 110, 1920, 1080)
+        # self.window.setCameraPosition(distance=30, elevation=12)
+        # self.window.show()
+
+        # self.root = Tk()
 
         gx = gl.GLGridItem()
         gy = gl.GLGridItem()
         gz = gl.GLGridItem()
+        # gx = pg.GridItem()
+        # gy = pg.GridItem()
+        # gz = pg.GridItem()
+
         gx.rotate(90, 0, 1, 0)
         gy.rotate(90, 1, 0, 0)
         gx.translate(-10, 0, 0)
@@ -92,19 +95,19 @@ class Terrain(object):
         self.rightPointList = keypoints[11:14]
         self.leftPointList = keypoints[14:]
 
-        self.a = (gl.GLScatterPlotItem(  # plot dot
+        self.a = (gl.GLScatterPlotItem(  # plot dots
             pos = keypoints[:11],
             color=pg.glColor((0,255,0)),
             size=15
         ))
         self.window.addItem(self.a)
-        self.right = (gl.GLScatterPlotItem(  # plot dot
+        self.right = (gl.GLScatterPlotItem(  # plot dots
             pos = self.rightPointList,
             color=pg.glColor((255,0,0)),
             size=15
         ))
         self.window.addItem(self.right)
-        self.left = (gl.GLScatterPlotItem(  # plot dot
+        self.left = (gl.GLScatterPlotItem(  # plot dots
             pos = self.leftPointList,
             color=pg.glColor((0,0,255)),
             size=15
@@ -122,47 +125,40 @@ class Terrain(object):
             self.window.addItem(self.lines[n])
 
 
-    def armAngle(self, rightArmPoint, leftArmPoint):
-        ra = np.array([rightArmPoint[0][0], rightArmPoint[0][1], rightArmPoint[0][2]])
-        rb = np.array([rightArmPoint[1][0], rightArmPoint[1][1], rightArmPoint[1][2]])
-        rc = np.array([rightArmPoint[2][0], rightArmPoint[2][1], rightArmPoint[2][2]])
-        rba = ra - rb
-        rbc = rc - rb
+    def armAngle(self, armPoint):
+        a = np.array([armPoint[0][0], armPoint[0][1], armPoint[0][2]])
+        b = np.array([armPoint[1][0], armPoint[1][1], armPoint[1][2]])
+        c = np.array([armPoint[2][0], armPoint[2][1], armPoint[2][2]])
+        ba = a - b
+        bc = c - b
 
-        rcosine_angle = np.dot(rba, rbc) / (np.linalg.norm(rba) * np.linalg.norm(rbc))
-        rangle = np.arccos(rcosine_angle)
+        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        angle = np.arccos(cosine_angle)
 
-        la = np.array([leftArmPoint[0][0], leftArmPoint[0][1], leftArmPoint[0][2]])
-        lb = np.array([leftArmPoint[1][0], leftArmPoint[1][1], leftArmPoint[1][2]])
-        lc = np.array([leftArmPoint[2][0], leftArmPoint[2][1], leftArmPoint[2][2]])
-        lba = la - lb
-        lbc = lc - lb
+        print("aciiiiiiii: ", np.degrees(angle))
+        # self.addAngleToPlot(angle1)
 
-        lcosine_angle = np.dot(lba, lbc) / (np.linalg.norm(lba) * np.linalg.norm(lbc))
-        langle = np.arccos(lcosine_angle)
 
-        self.angle = "sağ kol açısı: %.2f\nsol kol açısı: %.2f" % (np.degrees(rangle), np.degrees(langle))
+    def addAngleToPlot(self, angle):
+        # self.window.paintGL(self, angle)
+        # self.window.renderText(10,10,10, text=f"angle: {angle}")
+        # gl.GLViewWidget.
 
-        # th1 = threading.Thread(self.addAngleToPlot(self.angle))
-        # th1 = threading.Thread(addAngleToPlot(self.angle))
-        # th1.start()
-        print(self.angle)
-        return self.angle
+        # t_up = pg.TextItem(str(angle), (0, 255, 0), anchor=(0, 0))
+        # t_up.setPos(10,10)
+        # self.window.addItem(t_up)
 
-    def addAngleToPlot(self, txtAngle):
-        # lbl = Label(root, text=angle, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-        # global TEXT 
-        root = tk.Tk()
-        root.geometry("250x100+%d+%d" % (0, 0))  # top left
-        root.overrideredirect(True)  # frameless tkinter window
-        root.resizable(False, False)
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
-        TEXT = txtAngle
-        lbl = tk.Label(root, text=TEXT, bg="#000000", fg="white",font=("bold", 15), border=0, width=35)
-        # lbl.config(text=TEXT)
-        lbl.grid(column=0, row=0, sticky="nsew")
-        root.mainloop()
+        # self.t = pg.TextItem(str(angle), (255, 255, 255), anchor=(0,0))
+        # self.windowText.addItem(self.t)
+        self.t = pg.TextItem(str(angle), (255, 0, 0), anchor=(0,0))
+        self.windowText.addItem(self.t)
+
+
+
+        # label = Label( root, textvariable=angle, relief=RAISED )
+        # label.pack()
+
+        # t_up.setPos(i + 0.5, -j + 0.5)
 
     def mesh(self, image):  # pass image and want it to return keypoints
         image_h, image_w = image.shape[:2]
@@ -174,8 +170,8 @@ class Terrain(object):
         # get humans, get 2d and 3d points
         for human in humans:
             pose_2d_mpii, visibility = common.MPIIPart.from_coco(human)
-            # print("\n\n")    
-            # print(pose_2d_mpii, visibility)  
+            # print("\n\n")
+            # print(pose_2d_mpii, visibility)
             pose_2d_mpiis.append([(int(x * standard_w + 0.5), int(y * standard_h + 0.5)) for x, y in pose_2d_mpii])  # all 2d keypoints
             visibilities.append(visibility)
 
@@ -211,12 +207,18 @@ class Terrain(object):
                     pos=np.array([keypoints[p] for p in pts])
                 )
 
-            txtAngle = self.armAngle(self.rightPointList, self.leftPointList)
-            th1 = threading.Thread(target=self.addAngleToPlot, args=(txtAngle, ), daemon=True)
-            th1.start()
-
-            # self.armAngle(self.rightPointList)
-            # self.armAngle(self.leftPointList)
+            # self.armAngle(keypoints[11:14])
+            # list1=(keypoints[11:14])
+            # print(list1)
+            # print("qqqqqqqqq")
+            # self.armAngle(keypoints[14:])
+            # print(list2)
+            # print("aaaa")
+            # print(type(list1))
+            # bu kısmı ekleyince ketpoint ler e li falan oluyor, arguman tasmasi old.icin
+            print(type(self.rightPointList))
+            self.armAngle(self.rightPointList)
+            self.armAngle(self.leftPointList)
 
     def start(self):
         """
@@ -231,45 +233,19 @@ class Terrain(object):
         """
         timer = QtCore.QTimer()
         timer.timeout.connect(self.update)
-
+        # t1 = threading.Thread(self.armAngle(self.rightPointList))
+        # t2 = threading.Thread(self.armAngle(self.leftPointList))
+        # t1.start()
+        # t2.start()
         timer.start(frametime)
         self.start()
-"""
-def addAngleToPlot(txtAngle=""):
-    root = tk.Tk()
-    root.geometry("250x100+%d+%d" % (0, 0))  # top left
-    root.overrideredirect(True)  # frameless tkinter window
-    root.resizable(False, False)
-    root.columnconfigure(0, weight=1)
-    root.rowconfigure(0, weight=1)
-    TEXT = txtAngle
-    lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.config(text=TEXT)
-    lbl.grid(column=0, row=0, sticky="nsew")
-    root.mainloop()
-"""
+
+
 if __name__ == '__main__':
     os.chdir('..')
-
-    # root = tk.Tk()
-    # root.geometry("250x100+%d+%d" % (0, 0))  # top left
-    # root.overrideredirect(True)  # frameless tkinter window
-    # root.resizable(False, False)
-    # root.columnconfigure(0, weight=1)
-    # root.rowconfigure(0, weight=1)
-
-    # TEXT = ""
-    # lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.grid(column=0, row=0, sticky="nsew")
-
-    # lbl = Label(root, text="", bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.grid(column=0, row=0, sticky="nsew")
+    # root = Tk()
     t = Terrain()
-    # th0 = threading.Thread(target=t)
-    # th0.start()
-    
     # root = Tk()
     # greeting = tk.Label(text="Hello, Tkinter")
     t.animation()
-    # root.mainloop()
     # root.mainloop()

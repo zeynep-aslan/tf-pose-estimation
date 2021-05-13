@@ -1,0 +1,1 @@
+python run_webcam.py --model=mobilenet_thin_432x368 --camera=0

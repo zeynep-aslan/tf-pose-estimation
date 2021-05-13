@@ -252,17 +252,16 @@ class TfPoseEstimator:
         self.target_size = target_size
 
         # load graph
-        with tf.gfile.GFile(graph_path, 'rb') as f:
-            graph_def = tf.GraphDef()
+        with tf.io.gfile.GFile(graph_path, 'rb') as f:
+            graph_def = tf.compat.v1.GraphDef()
             graph_def.ParseFromString(f.read())
-
-        self.graph = tf.get_default_graph()
+        # self.graph = tf.get_default_graph()
+        self.graph = tf.compat.v1.get_default_graph()
         tf.import_graph_def(graph_def, name='TfPoseEstimator')
-        self.persistent_sess = tf.Session(graph=self.graph)
-
+        # self.persistent_sess = tf.Session(graph=self.graph)
+        self.persistent_sess = tf.compat.v1.Session(graph=self.graph)
         # for op in self.graph.get_operations():
         #     print(op.name)
-
         self.tensor_image = self.graph.get_tensor_by_name('TfPoseEstimator/image:0')
         self.tensor_output = self.graph.get_tensor_by_name('TfPoseEstimator/Openpose/concat_stage7:0')
 
@@ -287,12 +286,17 @@ class TfPoseEstimator:
         npimg_q = npimg_q.astype(np.uint8)
         return npimg_q
 
+    def calculateRightArmAngle(self, dots):
+        pass
+
     @staticmethod
     def draw_humans(npimg, humans, imgcopy=False):
         if imgcopy:
             npimg = np.copy(npimg)
         image_h, image_w = npimg.shape[:2]
         centers = {}
+        rightArmDots = []
+        leftArmDots = []
         for human in humans:
             # draw point
             for i in range(common.CocoPart.Background.value):
@@ -302,16 +306,35 @@ class TfPoseEstimator:
                 body_part = human.body_parts[i]
                 center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
                 centers[i] = center
-                cv2.circle(npimg, center, 3, common.CocoColors[i], thickness=3, lineType=8, shift=0)
+                # cv2.circle(npimg, center, 3, common.CocoColors[i], thickness=3, lineType=8, shift=0)
+                cv2.circle(npimg, center, 3, common.newCocoColors[i], thickness=3, lineType=8, shift=0)
 
             # draw line
             for pair_order, pair in enumerate(common.CocoPairsRender):
                 if pair[0] not in human.body_parts.keys() or pair[1] not in human.body_parts.keys():
                     continue
+                # print("koseler: ", centers[pair[0]], centers[pair[1]])
+                if pair_order==2 or pair_order==3:
+                    npimg = cv2.line(npimg, centers[pair[0]], centers[pair[1]], (148,53,142), 3)
+                    # print("2, 3: ", centers[pair[0]], centers[pair[1]])
+                    if pair_order==2:
+                        rightArmDots.append(centers[pair[0]])
+                        rightArmDots.append(centers[pair[1]])
+                    else:
+                        rightArmDots.append(centers[pair[1]])    
+                elif pair_order==4 or pair_order==5:
+                    # print("4, 5: ", centers[pair[0]], centers[pair[1]])
+                    npimg = cv2.line(npimg, centers[pair[0]], centers[pair[1]], (213,130,203), 3)
+                    if pair_order==4:
+                        leftArmDots.append(centers[pair[0]])
+                        leftArmDots.append(centers[pair[1]])
+                    else:
+                        leftArmDots.append(centers[pair[1]]) 
+                else:
+                    # print("koseler: ", centers[pair[0]], centers[pair[1]])
+                    npimg = cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.newCocoColors[pair_order], 3)
 
-                npimg = cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)
-
-        return npimg
+        return npimg, rightArmDots, leftArmDots
 
     def _get_scaled_img(self, npimg, scale):
         get_base_scale = lambda s, w, h: max(self.target_size[0] / float(w), self.target_size[1] / float(h)) * s

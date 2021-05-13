@@ -19,7 +19,7 @@ import common
 
 import math
 import threading
-import tkinter as tk
+from tkinter import *
 # from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 
 class Terrain(object):
@@ -32,29 +32,15 @@ class Terrain(object):
         # setup the view window
         self.app = QtGui.QApplication(sys.argv)
         self.window = gl.GLViewWidget()
-        self.window.setFixedSize(1920, 1080)
-        self.window.showMaximized()
-        # self.window.setMaximumSize(1920, 1080)
         # self.win = pg.GraphicsWindow()
         # self.vb = self.win.addViewBox(col=0, row=0)
         # self.t = pg.TextItem("zeynep", (255, 255, 255), anchor=(0,0))
         # self.vb.addItem(self.t)
         self.window.setWindowTitle('Terrain')
-        self.window.setGeometry(0, 0, 1920, 1080)
+        self.window.setGeometry(0, 110, 1920, 1080)
         self.window.setCameraPosition(distance=30, elevation=12)
         self.window.show()
         # self.root = Tk()
-        self.angle = ""
-        # self.root = Tk()
-        # self.root.geometry("100x50+%d+%d" % (0, 0))  # top left
-        # self.root.overrideredirect(True)  # frameless tkinter window
-        # self.root.resizable(False, False)
-        # self.root.columnconfigure(0, weight=1)
-        # self.root.rowconfigure(0, weight=1)
-
-        # TEXT = ""
-        # self.lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-        # self.lbl.grid(column=0, row=0, sticky="nsew")
 
         gx = gl.GLGridItem()
         gy = gl.GLGridItem()
@@ -92,19 +78,19 @@ class Terrain(object):
         self.rightPointList = keypoints[11:14]
         self.leftPointList = keypoints[14:]
 
-        self.a = (gl.GLScatterPlotItem(  # plot dot
+        self.a = (gl.GLScatterPlotItem(  # plot dots
             pos = keypoints[:11],
             color=pg.glColor((0,255,0)),
             size=15
         ))
         self.window.addItem(self.a)
-        self.right = (gl.GLScatterPlotItem(  # plot dot
+        self.right = (gl.GLScatterPlotItem(  # plot dots
             pos = self.rightPointList,
             color=pg.glColor((255,0,0)),
             size=15
         ))
         self.window.addItem(self.right)
-        self.left = (gl.GLScatterPlotItem(  # plot dot
+        self.left = (gl.GLScatterPlotItem(  # plot dots
             pos = self.leftPointList,
             color=pg.glColor((0,0,255)),
             size=15
@@ -121,48 +107,88 @@ class Terrain(object):
             # add them to our window
             self.window.addItem(self.lines[n])
 
+    """
+    def armAngle(self, armPoint):
+        # print(armPoint)
+        # print("args: ", armPoint)
+        x1, y1, z1 = armPoint[0][0], armPoint[0][1], armPoint[0][2]
+        x2, y2, z2 = armPoint[1][0], armPoint[1][1], armPoint[1][2]
+        x3, y3, z3 = armPoint[2][0], armPoint[2][1], armPoint[2][2]
 
-    def armAngle(self, rightArmPoint, leftArmPoint):
-        ra = np.array([rightArmPoint[0][0], rightArmPoint[0][1], rightArmPoint[0][2]])
-        rb = np.array([rightArmPoint[1][0], rightArmPoint[1][1], rightArmPoint[1][2]])
-        rc = np.array([rightArmPoint[2][0], rightArmPoint[2][1], rightArmPoint[2][2]])
-        rba = ra - rb
-        rbc = rc - rb
+        # Find direction ratio of line AB
+        ABx = x1 - x2
+        ABy = y1 - y2
+        ABz = z1 - z2
 
-        rcosine_angle = np.dot(rba, rbc) / (np.linalg.norm(rba) * np.linalg.norm(rbc))
-        rangle = np.arccos(rcosine_angle)
+        # Find direction ratio of line BC
+        BCx = x3 - x2
+        BCy = y3 - y2
+        BCz = z3 - z2
 
-        la = np.array([leftArmPoint[0][0], leftArmPoint[0][1], leftArmPoint[0][2]])
-        lb = np.array([leftArmPoint[1][0], leftArmPoint[1][1], leftArmPoint[1][2]])
-        lc = np.array([leftArmPoint[2][0], leftArmPoint[2][1], leftArmPoint[2][2]])
-        lba = la - lb
-        lbc = lc - lb
+        # Find the dotProduct
+        # of lines AB & BC
+        dotProduct = (ABx * BCx +
+                    ABy * BCy +
+                    ABz * BCz)
 
-        lcosine_angle = np.dot(lba, lbc) / (np.linalg.norm(lba) * np.linalg.norm(lbc))
-        langle = np.arccos(lcosine_angle)
+        # Find magnitude of
+        # line AB and BC
+        magnitudeAB = (ABx * ABx +
+                    ABy * ABy +
+                    ABz * ABz)
+        magnitudeBC = (BCx * BCx +
+                    BCy * BCy +
+                    BCz * BCz)
 
-        self.angle = "sağ kol açısı: %.2f\nsol kol açısı: %.2f" % (np.degrees(rangle), np.degrees(langle))
+        # Find the cosine of
+        # the angle formed
+        # by line AB and BC
+        angle = dotProduct
+        angle /= math.sqrt(magnitudeAB *
+                        magnitudeBC)
 
-        # th1 = threading.Thread(self.addAngleToPlot(self.angle))
-        # th1 = threading.Thread(addAngleToPlot(self.angle))
-        # th1.start()
-        print(self.angle)
-        return self.angle
+        # Find angle in radian
+        angle = (angle * 180) / 3.14
+        angle1 = round(abs(angle), 4)
 
-    def addAngleToPlot(self, txtAngle):
-        # lbl = Label(root, text=angle, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-        # global TEXT 
-        root = tk.Tk()
-        root.geometry("250x100+%d+%d" % (0, 0))  # top left
-        root.overrideredirect(True)  # frameless tkinter window
-        root.resizable(False, False)
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
-        TEXT = txtAngle
-        lbl = tk.Label(root, text=TEXT, bg="#000000", fg="white",font=("bold", 15), border=0, width=35)
-        # lbl.config(text=TEXT)
-        lbl.grid(column=0, row=0, sticky="nsew")
-        root.mainloop()
+        # Print angle
+        print("acccciiii: ", angle1)
+        self.addAngleToPlot(angle1)
+
+    """
+    def armAngle(self, armPoint):
+        a = np.array([armPoint[0][0], armPoint[0][1], armPoint[0][2]])
+        b = np.array([armPoint[1][0], armPoint[1][1], armPoint[1][2]])
+        c = np.array([armPoint[2][0], armPoint[2][1], armPoint[2][2]])
+        ba = a - b
+        bc = c - b
+
+        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        angle = np.arccos(cosine_angle)
+
+        print("aciiiiiiii: ", np.degrees(angle))
+        # self.addAngleToPlot(angle1)
+
+
+    def addAngleToPlot(self, angle):
+        # self.window.paintGL(self, angle)
+        # self.window.renderText(10,10,10, text=f"angle: {angle}")
+        # gl.GLViewWidget.
+
+        # t_up = pg.TextItem(str(angle), (0, 255, 0), anchor=(0, 0))
+        # t_up.setPos(10,10)
+        # self.window.addItem(t_up)
+
+        # self.win = pg.GraphicsWindow()
+        # self.vb = self.win.addViewBox(col=0, row=0)
+        # self.t = pg.TextItem("zeynep", (255, 255, 255), anchor=(0,0))
+        # self.vb.addItem(self.t)
+
+        # label = Label( root, textvariable=angle, relief=RAISED )
+        # label.pack()
+
+        # t_up.setPos(i + 0.5, -j + 0.5)
+        pass
 
     def mesh(self, image):  # pass image and want it to return keypoints
         image_h, image_w = image.shape[:2]
@@ -211,12 +237,19 @@ class Terrain(object):
                     pos=np.array([keypoints[p] for p in pts])
                 )
 
-            txtAngle = self.armAngle(self.rightPointList, self.leftPointList)
-            th1 = threading.Thread(target=self.addAngleToPlot, args=(txtAngle, ), daemon=True)
-            th1.start()
+            # self.armAngle(keypoints[11:14])
+            # list1=(keypoints[11:14])
+            # print(list1)
+            # print("qqqqqqqqq")
+            # self.armAngle(keypoints[14:])
+            # print(list2)
+            # print("aaaa")
+            # print(type(list1))
+            # bu kısmı ekleyince ketpoint ler e li falan oluyor, arguman tasmasi old.icin
+            print(type(self.rightPointList))
 
-            # self.armAngle(self.rightPointList)
-            # self.armAngle(self.leftPointList)
+            self.armAngle(self.rightPointList)
+            self.armAngle(self.leftPointList)
 
     def start(self):
         """
@@ -231,45 +264,19 @@ class Terrain(object):
         """
         timer = QtCore.QTimer()
         timer.timeout.connect(self.update)
-
+        # t1 = threading.Thread(self.armAngle(self.rightPointList))
+        # t2 = threading.Thread(self.armAngle(self.leftPointList))
+        # t1.start()
+        # t2.start()
         timer.start(frametime)
         self.start()
-"""
-def addAngleToPlot(txtAngle=""):
-    root = tk.Tk()
-    root.geometry("250x100+%d+%d" % (0, 0))  # top left
-    root.overrideredirect(True)  # frameless tkinter window
-    root.resizable(False, False)
-    root.columnconfigure(0, weight=1)
-    root.rowconfigure(0, weight=1)
-    TEXT = txtAngle
-    lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.config(text=TEXT)
-    lbl.grid(column=0, row=0, sticky="nsew")
-    root.mainloop()
-"""
+
+
 if __name__ == '__main__':
     os.chdir('..')
-
-    # root = tk.Tk()
-    # root.geometry("250x100+%d+%d" % (0, 0))  # top left
-    # root.overrideredirect(True)  # frameless tkinter window
-    # root.resizable(False, False)
-    # root.columnconfigure(0, weight=1)
-    # root.rowconfigure(0, weight=1)
-
-    # TEXT = ""
-    # lbl = tk.Label(root, text=TEXT, bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.grid(column=0, row=0, sticky="nsew")
-
-    # lbl = Label(root, text="", bg="#e61c1c", font=("bold", 15), border=0, width=35)
-    # lbl.grid(column=0, row=0, sticky="nsew")
+    # root = Tk()
     t = Terrain()
-    # th0 = threading.Thread(target=t)
-    # th0.start()
-    
     # root = Tk()
     # greeting = tk.Label(text="Hello, Tkinter")
     t.animation()
-    # root.mainloop()
     # root.mainloop()
