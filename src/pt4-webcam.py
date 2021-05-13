@@ -184,7 +184,9 @@ def calculateArmAngle(rightArmDots, leftArmDots):
         rangle = np.arccos(rcosine_angle)
         ranglee = str(np.degrees(rangle))
         print(ranglee)
-
+    except:
+        ranglee = "sagda eksik var"
+    try:
         # left arm angle
         la = np.array([leftArmDots[0][0], leftArmDots[0][1]])
         lb = np.array([leftArmDots[1][0], leftArmDots[1][1]])
@@ -198,8 +200,7 @@ def calculateArmAngle(rightArmDots, leftArmDots):
         langlee = str(np.degrees(langle))
         print(langlee)
     except:
-        ranglee = "eksik var"
-        langlee = "eksik var"
+        langlee = "solda eksik var"
 
     return ranglee, langlee
 
